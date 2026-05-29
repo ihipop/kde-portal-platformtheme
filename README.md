@@ -1,7 +1,6 @@
 # kde-portal-platformtheme
 
-Qt 6 QPA platform theme plugins that sync KDE colors, fonts, icons, and UI hints
-through xdg-desktop-portal, avoiding stale `kdeglobals` file binds in Flatpak.
+**Qt 6 platform theme plugins for KDE appearance sync via xdg-desktop-portal, avoiding stale `kdeglobals` file binds in Flatpak.**
 
 This repository builds two plugin variants:
 
@@ -37,12 +36,20 @@ and then put `$HOME/.config` early in `XDG_CONFIG_DIRS`. That works because a
 directory mount survives KDE's atomic file replacement, but it gives the app
 read access to much more private host configuration than it actually needs.
 
-Use this plugin when:
+#### Use this plugin when:
 
 - Flatpak single-file binds can go stale after atomic rewrites.
-- Qt does not read KDE settings from xdg-desktop-portal itself.
+- Qt's `xdgdesktopportal` platform theme reads the standard
 - The application wants KDE appearance support without bundling the full KDE
   Frameworks stack.
+
+As far as I know, as of May 2026, no Qt LTS release provides this behavior
+unless `plasma-integration` is included. eg: **Qt 6.5 LTS, used by the Flatpak KDE
+runtime 6.5, does not include `plasma-integration` either.**
+
+**Bundling `plasma-integration` pulls in a large KDE Frameworks dependency stack.
+If you want KDE appearance integration without that dependency cost, this plugin
+is meant for that case.**
 
 ## What this plugin does
 
@@ -87,7 +94,7 @@ modules:
       - -DCMAKE_BUILD_TYPE=Release
     sources:
       - type: dir
-        path: qt-platformthemes/kde-portal-plasma
+        path: kde-portal-plasma
 ```
 
 The module installs the Plasma-like plugin as:
@@ -101,6 +108,8 @@ Enable it from `finish-args`:
 ```yaml
 finish-args:
   - --env=QT_QPA_PLATFORMTHEME=kde-portal-plasma
+  # or the lite one:
+  #- --env=QT_QPA_PLATFORMTHEME=kde-portal
   - --env=QT_PLUGIN_PATH=/app/plugins
   - --nofilesystem=xdg-config/kdeglobals
   - --filesystem=xdg-config/kcminputrc:ro
